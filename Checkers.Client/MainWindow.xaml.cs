@@ -15,7 +15,12 @@ namespace Checkers.Client
         private readonly HubConnection connection =
             new HubConnectionBuilder()
                 .WithUrl("https://localhost:7275/gamehub")
-                .WithAutomaticReconnect()
+                .WithAutomaticReconnect(new[]
+                {
+                    TimeSpan.Zero,
+                    TimeSpan.FromSeconds(2),
+                    TimeSpan.FromSeconds(5)
+                })
                 .Build();
 
         private GameStateMessage? gameState;
@@ -29,6 +34,11 @@ namespace Checkers.Client
         public MainWindow()
         {
             InitializeComponent();
+            connection.ServerTimeout =
+                TimeSpan.FromSeconds(15);
+
+            connection.KeepAliveInterval =
+                TimeSpan.FromSeconds(5);
 
             RegisterServerMessages();
             RegisterConnectionEvents();
@@ -83,6 +93,9 @@ namespace Checkers.Client
 
                     ConnectionStatus.Foreground =
                         Brushes.OrangeRed;
+
+                    ReconnectButton.Visibility =
+                        Visibility.Visible;
 
                     FindGameButton.IsEnabled = false;
                     ResignButton.IsEnabled = false;
@@ -242,6 +255,8 @@ namespace Checkers.Client
         {
             try
             {
+                ReconnectButton.Visibility = Visibility.Collapsed;
+
                 ConnectionStatus.Text =
                     "Connecting to server...";
 
@@ -249,6 +264,8 @@ namespace Checkers.Client
                     Brushes.Gold;
 
                 await connection.StartAsync();
+
+                ReconnectButton.Visibility = Visibility.Collapsed;
 
                 string response =
                     await connection.InvokeAsync<string>("Ping");
@@ -324,6 +341,55 @@ namespace Checkers.Client
 
                 GameStatus.Text =
                     $"Could not join: {ex.Message}";
+            }
+        }
+
+        private async void ReconnectButton_Click(
+    object sender,
+    RoutedEventArgs e)
+        {
+            if (connection.State != HubConnectionState.Disconnected)
+                return;
+
+            try
+            {
+                ReconnectButton.IsEnabled = false;
+
+                ConnectionStatus.Text =
+                    "Connecting to server...";
+
+                ConnectionStatus.Foreground =
+                    Brushes.Gold;
+
+                await connection.StartAsync();
+
+                string response =
+                    await connection.InvokeAsync<string>("Ping");
+
+                ConnectionStatus.Text = response;
+                ConnectionStatus.Foreground =
+                    Brushes.LightGreen;
+
+                ReconnectButton.Visibility =
+                    Visibility.Collapsed;
+
+                ResetForAnotherGame(
+                    "Connected. Ready to find a game.");
+            }
+            catch (Exception ex)
+            {
+                ConnectionStatus.Text =
+                    $"Connection failed: {ex.Message}";
+
+                ConnectionStatus.Foreground =
+                    Brushes.OrangeRed;
+
+                ReconnectButton.Visibility =
+                    Visibility.Visible;
+            }
+            finally
+            {
+                ReconnectButton.IsEnabled = true;
             }
         }
 
