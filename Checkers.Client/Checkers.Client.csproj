@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.19" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Checkers.GameLogic\Checkers.GameLogic.csproj" />
+    <ProjectReference Include="..\Checkers.Shared\Checkers.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

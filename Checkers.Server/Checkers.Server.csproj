@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Checkers.GameLogic\Checkers.GameLogic.csproj" />
+    <ProjectReference Include="..\Checkers.Shared\Checkers.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

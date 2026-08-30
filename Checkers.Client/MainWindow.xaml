@@ -1,0 +1,85 @@
+﻿<Window x:Class="Checkers.Client.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Online Checkers"
+        Height="810"
+        Width="900"
+        WindowStartupLocation="CenterScreen">
+
+    <Grid Background="#20242B">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="45"/>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="45"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="ConnectionStatus"
+                   Grid.Row="0"
+                   Text="Not connected"
+                   Foreground="LightGray"
+                   FontSize="16"
+                   FontWeight="SemiBold"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
+
+        <StackPanel Grid.Row="1"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+
+            <TextBox x:Name="UsernameTextBox"
+                     Width="220"
+                     Height="34"
+                     FontSize="16"
+                     VerticalContentAlignment="Center"
+                     Margin="0,0,10,0"/>
+
+            <Button x:Name="FindGameButton"
+                    Content="Find Game"
+                    Width="120"
+                    Height="34"
+                    FontSize="16"
+                    Margin="0,0,10,0"
+                    IsEnabled="False"
+                    Click="FindGameButton_Click"/>
+
+            <Button x:Name="ResignButton"
+                    Content="Resign"
+                    Width="100"
+                    Height="34"
+                    FontSize="16"
+                    Margin="0,0,10,0"
+                    IsEnabled="False"
+                    Click="ResignButton_Click"/>
+
+            <Button x:Name="NewGameButton"
+                    Content="Find Another Game"
+                    Width="160"
+                    Height="34"
+                    FontSize="16"
+                    IsEnabled="False"
+                    Click="NewGameButton_Click"/>
+
+        </StackPanel>
+
+        <TextBlock x:Name="GameStatus"
+                   Grid.Row="2"
+                   Text="Enter a username and find a game."
+                   Foreground="White"
+                   FontSize="17"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
+
+        <Border Grid.Row="3"
+                Width="640"
+                Height="640"
+                BorderBrush="#111111"
+                BorderThickness="4">
+
+            <UniformGrid x:Name="BoardGrid"
+                         Rows="8"
+                         Columns="8"/>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.10.12120.281
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checkers.Client", "Checkers.Client\Checkers.Client.csproj", "{9AA309E3-EEE2-427C-BF41-558F0B98A60D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checkers.GameLogic", "Checkers.GameLogic\Checkers.GameLogic.csproj", "{5AA254A3-6BAE-4BAA-B932-7DC066024E65}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checkers.Server", "Checkers.Server\Checkers.Server.csproj", "{89D5E8D8-3303-487E-9EFB-246044C14ED6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checkers.Shared", "Checkers.Shared\Checkers.Shared.csproj", "{143D7434-97F4-4454-BFDC-85ACA16510E0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Checkers.GameLogic.Tests", "Checkers.GameLogic.Tests\Checkers.GameLogic.Tests.csproj", "{57C38F72-4B48-4A2C-81BE-FC7D33A798E0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9AA309E3-EEE2-427C-BF41-558F0B98A60D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AA309E3-EEE2-427C-BF41-558F0B98A60D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AA309E3-EEE2-427C-BF41-558F0B98A60D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AA309E3-EEE2-427C-BF41-558F0B98A60D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AA254A3-6BAE-4BAA-B932-7DC066024E65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AA254A3-6BAE-4BAA-B932-7DC066024E65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AA254A3-6BAE-4BAA-B932-7DC066024E65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AA254A3-6BAE-4BAA-B932-7DC066024E65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89D5E8D8-3303-487E-9EFB-246044C14ED6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89D5E8D8-3303-487E-9EFB-246044C14ED6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89D5E8D8-3303-487E-9EFB-246044C14ED6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89D5E8D8-3303-487E-9EFB-246044C14ED6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{143D7434-97F4-4454-BFDC-85ACA16510E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{143D7434-97F4-4454-BFDC-85ACA16510E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{143D7434-97F4-4454-BFDC-85ACA16510E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{143D7434-97F4-4454-BFDC-85ACA16510E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57C38F72-4B48-4A2C-81BE-FC7D33A798E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57C38F72-4B48-4A2C-81BE-FC7D33A798E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57C38F72-4B48-4A2C-81BE-FC7D33A798E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57C38F72-4B48-4A2C-81BE-FC7D33A798E0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {69B4BC54-E1E5-42E3-8B90-5543BD427FF9}
+	EndGlobalSection
+EndGlobal
