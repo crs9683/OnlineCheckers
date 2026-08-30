@@ -134,51 +134,60 @@ namespace Checkers.Server
         public async Task MakeMove(MoveRequest request)
         {
             GameRoom? room;
+
+            // Use the global lock only for the quick dictionary lookup.
+            lock (SyncRoot)
+            {
+                games.TryGetValue(request.GameId, out room);
+            }
+
+            if (room == null)
+            {
+                await Clients.Caller.SendAsync(
+                    "MoveRejected",
+                    "That game no longer exists.");
+
+                return;
+            }
+
             string? rejectionReason = null;
             GameStateMessage? updatedState = null;
 
-            lock (SyncRoot)
+            // Only this individual game is locked while validating a move.
+            lock (room.GameLock)
             {
-                if (!games.TryGetValue(request.GameId, out room))
+                Player? callerPlayer =
+                    GetPlayerForConnection(
+                        room,
+                        Context.ConnectionId);
+
+                if (callerPlayer == null)
                 {
-                    rejectionReason = "That game no longer exists.";
+                    rejectionReason =
+                        "You are not a player in this game.";
+                }
+                else if (callerPlayer != room.Game.CurrentPlayer)
+                {
+                    rejectionReason =
+                        "It is not your turn.";
                 }
                 else
                 {
-                    Player? callerPlayer =
-                        GetPlayerForConnection(
-                            room,
-                            Context.ConnectionId);
+                    bool moveSucceeded = room.Game.TryMove(
+                        request.FromRow,
+                        request.FromColumn,
+                        request.ToRow,
+                        request.ToColumn);
 
-                    if (callerPlayer == null)
+                    if (!moveSucceeded)
                     {
                         rejectionReason =
-                            "You are not a player in this game.";
-                    }
-                    else if (callerPlayer !=
-                             room.Game.CurrentPlayer)
-                    {
-                        rejectionReason =
-                            "It is not your turn.";
+                            "That move is not legal.";
                     }
                     else
                     {
-                        bool moveSucceeded = room.Game.TryMove(
-                            request.FromRow,
-                            request.FromColumn,
-                            request.ToRow,
-                            request.ToColumn);
-
-                        if (!moveSucceeded)
-                        {
-                            rejectionReason =
-                                "That move is not legal.";
-                        }
-                        else
-                        {
-                            updatedState =
-                                CreateGameState(room.Game);
-                        }
+                        updatedState =
+                            CreateGameState(room.Game);
                     }
                 }
             }
@@ -192,7 +201,7 @@ namespace Checkers.Server
                 return;
             }
 
-            if (room != null && updatedState != null)
+            if (updatedState != null)
             {
                 await Clients.Group(room.GameId)
                     .SendAsync("GameUpdated", updatedState);
@@ -202,38 +211,45 @@ namespace Checkers.Server
         public async Task ResignGame(string gameId)
         {
             GameRoom? room;
-            GameStateMessage? updatedState = null;
-            string? errorMessage = null;
 
             lock (SyncRoot)
             {
-                if (!games.TryGetValue(gameId, out room))
+                games.TryGetValue(gameId, out room);
+            }
+
+            if (room == null)
+            {
+                await Clients.Caller.SendAsync(
+                    "MoveRejected",
+                    "That game no longer exists.");
+
+                return;
+            }
+
+            string? errorMessage = null;
+            GameStateMessage? updatedState = null;
+
+            lock (room.GameLock)
+            {
+                Player? resigningPlayer =
+                    GetPlayerForConnection(
+                        room,
+                        Context.ConnectionId);
+
+                if (resigningPlayer == null)
                 {
-                    errorMessage = "That game no longer exists.";
+                    errorMessage =
+                        "You are not a player in this game.";
+                }
+                else if (!room.Game.Resign(resigningPlayer.Value))
+                {
+                    errorMessage =
+                        "The game has already ended.";
                 }
                 else
                 {
-                    Player? resigningPlayer =
-                        GetPlayerForConnection(
-                            room,
-                            Context.ConnectionId);
-
-                    if (resigningPlayer == null)
-                    {
-                        errorMessage =
-                            "You are not a player in this game.";
-                    }
-                    else if (!room.Game.Resign(
-                                 resigningPlayer.Value))
-                    {
-                        errorMessage =
-                            "The game has already ended.";
-                    }
-                    else
-                    {
-                        updatedState =
-                            CreateGameState(room.Game);
-                    }
+                    updatedState =
+                        CreateGameState(room.Game);
                 }
             }
 
@@ -246,7 +262,7 @@ namespace Checkers.Server
                 return;
             }
 
-            if (room != null && updatedState != null)
+            if (updatedState != null)
             {
                 await Clients.Group(room.GameId)
                     .SendAsync("GameUpdated", updatedState);
@@ -256,17 +272,28 @@ namespace Checkers.Server
         public async Task LeaveFinishedGame(string gameId)
         {
             GameRoom? room;
-            string? errorMessage = null;
 
             lock (SyncRoot)
             {
-                if (!games.TryGetValue(gameId, out room))
-                {
-                    errorMessage = "That game no longer exists.";
-                }
-                else if (GetPlayerForConnection(
-                             room,
-                             Context.ConnectionId) == null)
+                games.TryGetValue(gameId, out room);
+            }
+
+            if (room == null)
+            {
+                await Clients.Caller.SendAsync(
+                    "MoveRejected",
+                    "That game no longer exists.");
+
+                return;
+            }
+
+            string? errorMessage = null;
+
+            lock (room.GameLock)
+            {
+                if (GetPlayerForConnection(
+                        room,
+                        Context.ConnectionId) == null)
                 {
                     errorMessage =
                         "You are not a player in this game.";
@@ -278,7 +305,10 @@ namespace Checkers.Server
                 }
                 else
                 {
-                    games.Remove(gameId);
+                    lock (SyncRoot)
+                    {
+                        games.Remove(gameId);
+                    }
                 }
             }
 
@@ -290,9 +320,6 @@ namespace Checkers.Server
 
                 return;
             }
-
-            if (room == null)
-                return;
 
             await Clients.Group(room.GameId)
                 .SendAsync(
@@ -309,11 +336,14 @@ namespace Checkers.Server
         }
 
         public override async Task OnDisconnectedAsync(
-            Exception? exception)
+    Exception? exception)
         {
             string? opponentConnectionId = null;
             GameRoom? disconnectedGame = null;
+            bool gameWasRemoved = false;
 
+            // Find the affected game, but do not hold the global
+            // lock while waiting for that game's individual lock.
             lock (SyncRoot)
             {
                 if (waitingPlayer?.ConnectionId ==
@@ -324,7 +354,8 @@ namespace Checkers.Server
 
                 foreach (GameRoom room in games.Values)
                 {
-                    if (room.RedConnectionId == Context.ConnectionId)
+                    if (room.RedConnectionId ==
+                        Context.ConnectionId)
                     {
                         disconnectedGame = room;
                         opponentConnectionId =
@@ -332,7 +363,8 @@ namespace Checkers.Server
                         break;
                     }
 
-                    if (room.BlackConnectionId == Context.ConnectionId)
+                    if (room.BlackConnectionId ==
+                        Context.ConnectionId)
                     {
                         disconnectedGame = room;
                         opponentConnectionId =
@@ -340,12 +372,32 @@ namespace Checkers.Server
                         break;
                     }
                 }
-
-                if (disconnectedGame != null)
-                    games.Remove(disconnectedGame.GameId);
             }
 
-            if (opponentConnectionId != null)
+            if (disconnectedGame != null)
+            {
+                lock (disconnectedGame.GameLock)
+                {
+                    lock (SyncRoot)
+                    {
+                        if (games.TryGetValue(
+                                disconnectedGame.GameId,
+                                out GameRoom? existingRoom) &&
+                            ReferenceEquals(
+                                existingRoom,
+                                disconnectedGame))
+                        {
+                            games.Remove(
+                                disconnectedGame.GameId);
+
+                            gameWasRemoved = true;
+                        }
+                    }
+                }
+            }
+
+            if (gameWasRemoved &&
+                opponentConnectionId != null)
             {
                 await Clients.Client(opponentConnectionId)
                     .SendAsync(
@@ -407,6 +459,7 @@ namespace Checkers.Server
 
         private sealed class GameRoom
         {
+            public object GameLock { get; } = new();
             public string GameId { get; set; } = "";
             public string RedConnectionId { get; set; } = "";
             public string BlackConnectionId { get; set; } = "";
